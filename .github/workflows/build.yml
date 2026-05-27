@@ -6,10 +6,10 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Install Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       
@@ -21,11 +21,12 @@ jobs:
       
       - name: Build APK
         run: |
-          cd storeapp
+          cp storeapp/storeapp/buildozer.spec .
+          cp storeapp/main.py .
           buildozer android debug
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: StoreManager-APK
-          path: storeapp/bin/*.apk
+          path: bin/*.apk
