@@ -1,33 +1,27 @@
 - name: Debug aidl
-        run: |
-          SDK=/usr/local/lib/android/sdk
-          echo "=== Find aidl ==="
-          find $SDK -name "aidl" 2>/dev/null
-          echo "=== Build tools versions ==="
-          ls $SDK/build-tools/
-          echo "=== Buildozer version ==="
-          buildozer version
 name: Build APK
-
 on: [push]
-
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-
       - name: Install Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev
           pip install buildozer cython==3.0.11
-
+      - name: Debug aidl
+        run: |
+          SDK=/usr/local/lib/android/sdk
+          echo "=== Find aidl ==="
+          find $SDK -name "aidl" 2>/dev/null
+          echo "=== Build tools ==="
+          ls $SDK/build-tools/
       - name: Accept licenses
         run: |
           mkdir -p ~/.android
@@ -35,17 +29,13 @@ jobs:
           SDK=/usr/local/lib/android/sdk
           yes | $SDK/cmdline-tools/latest/bin/sdkmanager --licenses || true
           yes | $SDK/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platforms;android-33" "platform-tools" || true
-          ln -sf $SDK/build-tools/33.0.2/aidl $SDK/platform-tools/aidl || true
-
       - name: Build APK
         env:
           ANDROIDSDK: /usr/local/lib/android/sdk
           ANDROIDNDK: /usr/local/lib/android/sdk/ndk/27.3.13750724
           ANDROIDAPI: "33"
           ANDROIDMINAPI: "21"
-          PATH: /usr/local/lib/android/sdk/build-tools/33.0.2:/usr/local/lib/android/sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
         run: buildozer android debug
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
