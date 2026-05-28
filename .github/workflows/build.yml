@@ -16,23 +16,23 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev
+          sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev wget
           pip install buildozer cython==3.0.11
 
-      - name: Setup Android SDK
+      - name: Install Android SDK manually
         run: |
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdtools.zip
+          unzip -q cmdtools.zip -d ~/.buildozer/android/platform/android-sdk/cmdline-tools
+          mv ~/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
           mkdir -p ~/.android
           echo "count=0" > ~/.android/repositories.cfg
-          yes | buildozer android debug 2>&1 | head -10 || true
           SDK=~/.buildozer/android/platform/android-sdk
           yes | $SDK/cmdline-tools/latest/bin/sdkmanager --licenses || true
           yes | $SDK/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platforms;android-33" "platform-tools" || true
-          ls $SDK/build-tools/
 
       - name: Build APK
-        run: |
-          export ANDROIDAPI=33
-          buildozer android debug
+        run: buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
